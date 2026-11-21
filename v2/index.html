@@ -59,6 +59,17 @@ body.night .stars{opacity:1}
 .big.b1{background:linear-gradient(#7fe0ff,#2f9ad8)}
 .big.b2{background:linear-gradient(#ffe39a,#f0a23a)}
 .big.b3{background:linear-gradient(#c8f0b0,#4fbf8a)}
+.big.b4{background:linear-gradient(#f3d4ff,#9a7be0)}
+#home.p .menu.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.abw{position:absolute;border-radius:50%;padding:8%;background:radial-gradient(circle at 30% 28%,rgba(255,255,255,.9) 0 10%,rgba(255,255,255,.28) 38%,rgba(190,235,255,.18) 70%);border:calc(var(--u)*.5) solid rgba(255,255,255,.8);box-shadow:inset 0 0 calc(var(--u)*3) rgba(255,255,255,.5)}
+.abw svg{width:100%;height:100%}
+.big .abw{aspect-ratio:1;height:auto!important}
+#bubscr .ab{position:absolute;left:0;top:0;will-change:transform;cursor:pointer}
+#bubscr .ab .abw{position:absolute;inset:0;animation:abwob 2.4s ease-in-out infinite}
+#bubscr .ab.gold .abw{background:radial-gradient(circle at 30% 28%,rgba(255,255,255,.95) 0 10%,rgba(255,230,120,.55) 40%,rgba(255,200,60,.35) 70%);border-color:#ffe27a;box-shadow:0 0 calc(var(--u)*4) #ffe27a}
+@keyframes abwob{0%,100%{transform:scale(1,1)}50%{transform:scale(1.05,.95)}}
+#bubscr .free{position:absolute;left:0;top:0;pointer-events:none;transition:transform 1.6s ease-in,opacity 1.6s ease-in}
+#bubscr .free svg{width:100%;height:100%}
 .big .sw{position:absolute;inset:0;animation:bob 3.4s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(calc(var(--u)*-1.4))}}
 /* ---- creatures ---- */
@@ -232,7 +243,7 @@ body.night .sandbig{filter:brightness(.6)}
    わたしのミニ水槽 (かくれんぼ付き) — 2歳向け PWA。外部依存なし・完全オフライン。
    ===================================================================== */
 "use strict";
-const APP_VERSION='2.1.0-beta';
+const APP_VERSION='2.2.0-beta';
 const $=(s,r=document)=>r.querySelector(s);
 const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -280,7 +291,7 @@ const IC={
 const SCHEMA_VERSION=2;
 const KEY='aquaMini2.save', KEY_BAK='aquaMini2.save.bak', KEY_LEGACY='aquaMini.v1', KEY_BAD='aquaMini2.save.corrupt', KEY_V1='aquaMini.save';
 const DEF=()=>({schemaVersion:SCHEMA_VERSION,tank:['chin','kuma','madako'],tankState:{},fav:[],sp:{},qn:0,streak:0,qOk:0,hideFinds:0,recent:[],daily:{k:'',n:0,done:false},
-  set:{vol:.6,tts:true,modes:{tank:true,hide:true,which:true},start:'home',diff:0,night:'auto',rest:true,restMin:30,wake:true,ambient:false,tilt:true}});
+  set:{vol:.6,tts:true,modes:{tank:true,hide:true,which:true,bubble:true},start:'home',diff:0,night:'auto',rest:true,restMin:30,wake:true,ambient:false,tilt:true}});
 let S=DEF();
 const isObj=o=>o&&typeof o==='object'&&!Array.isArray(o);
 const num=(v,d,lo=-1e9,hi=1e9)=>(typeof v==='number'&&isFinite(v))?Math.max(lo,Math.min(hi,v)):d;
@@ -302,8 +313,8 @@ function normalizeState(j){
   if(isObj(j.daily))o.daily={k:typeof j.daily.k==='string'?j.daily.k.slice(0,20):'',n:int(j.daily.n,0,0,3),done:bool(j.daily.done,false)};
   if(isObj(j.set)){ const t=j.set,e=o.set;
     e.vol=num(t.vol,e.vol,0,1); e.tts=bool(t.tts,e.tts);
-    if(isObj(t.modes)){ ['tank','hide','which'].forEach(k=>{ e.modes[k]=bool(t.modes[k],true); }); if(!e.modes.tank&&!e.modes.hide&&!e.modes.which)e.modes.tank=e.modes.hide=e.modes.which=true; }
-    e.start=oneOf(t.start,['home','tank','hide','which'],'home'); e.diff=int(t.diff,0,0,4); e.night=oneOf(t.night,['auto','day','night'],'auto');
+    if(isObj(t.modes)){ ['tank','hide','which','bubble'].forEach(k=>{ e.modes[k]=bool(t.modes[k],true); }); if(!e.modes.tank&&!e.modes.hide&&!e.modes.which&&!e.modes.bubble)e.modes.tank=e.modes.hide=e.modes.which=e.modes.bubble=true; }
+    e.start=oneOf(t.start,['home','tank','hide','which','bubble'],'home'); e.diff=int(t.diff,0,0,4); e.night=oneOf(t.night,['auto','day','night'],'auto');
     e.rest=bool(t.rest,e.rest); e.restMin=int(t.restMin,30,5,240); e.wake=bool(t.wake,e.wake); e.ambient=bool(t.ambient,e.ambient); e.tilt=bool(t.tilt,e.tilt); }
   return o;
 }
@@ -946,7 +957,7 @@ class Swimmers{
 }
 
 const SCREENS={};
-const enabledModes=()=>['tank','hide','which'].filter(m=>S.set.modes[m]);
+const enabledModes=()=>['tank','hide','which','bubble'].filter(m=>S.set.modes[m]);
 function dailyInfo(){ const rng=mulberry32(hashStr('aq'+dateKey())); const g=GROUPS[Math.floor(rng()*GROUPS.length)]; const l=SPECIES.filter(s=>s.group===g); const sp=l[Math.floor(rng()*l.length)];
   if(S.daily.k!==dateKey()){ S.daily={k:dateKey(),n:0,done:false}; save(); } return {group:g,sp}; }
 
@@ -957,14 +968,15 @@ SCREENS.home=(el)=>{
   const sw=new Swimmers(layer); sw.small=.6; sw.sandFrac=.06;
   let ids=SPECIES.filter(s=>S.sp[s.id]&&S.sp[s.id].disc&&kindOf(s)==='swim').map(s=>s.id); if(ids.length<4)ids=ids.concat(['kuma','nanyo','tatsu','hakofugu','dango']);
   [...new Set(ids)].sort(()=>Math.random()-.5).slice(0,5).forEach(id=>sw.add(id));
-  const modes=enabledModes(); menu.style.setProperty('--n',Math.max(1,modes.length));
+  const modes=enabledModes(); menu.style.setProperty('--n',Math.max(1,modes.length)); menu.classList.toggle('n4',modes.length===4);
   const mk=(m,cls,html)=>{ const d=document.createElement('div'); d.className='big '+cls; d.innerHTML=html; d.addEventListener('pointerdown',()=>Snd.init(),{passive:true}); d.addEventListener('click',safe(()=>{ Snd.happy(); go(m); })); menu.appendChild(d); };
   const mini=(id,css,sil)=>`<div style="position:absolute;${css}">${creatureSVG(BY[id],{sil})}</div>`;
   const ICONS={
     tank:`<div class="sw">${mini('kuma','left:6%;top:14%;width:52%;height:52%')}${mini('madako','right:6%;bottom:6%;width:46%;height:46%')}${mini('hitode','left:12%;bottom:4%;width:26%;height:26%')}</div>`,
     hide:`<div class="sw" style="inset:6% 12% 0 12%">${creatureSVG(BY.chin)}</div>`,
+    bubble:`<div class="sw"><div class="abw" style="left:8%;top:14%;width:50%;height:50%">${creatureSVG(BY.hakofugu)}</div><div class="abw" style="right:6%;bottom:8%;width:40%;height:40%">${creatureSVG(BY.kani)}</div><div class="abw" style="right:18%;top:6%;width:20%;height:20%"></div></div>`,
     which:`<div class="sw">${mini('kuma','left:4%;top:20%;width:46%;height:46%')}<div style="position:absolute;right:4%;top:20%;width:46%;height:46%;border-radius:12%;background:rgba(255,255,255,.55)"></div>${mini('madako','right:7%;top:23%;width:40%;height:40%',true).replace('<div style="','<div class="dim" style="')}<svg viewBox="0 0 48 48" style="position:absolute;right:13%;top:38%;width:28%;height:28%"><path d="M15 17a9 9 0 1 1 13 8c-3 2-4 3-4 7M24 40v1" fill="none" stroke="#ffe27a" stroke-width="6" stroke-linecap="round"/></svg></div>`};
-  const cls={tank:'b1',hide:'b2',which:'b3'}; modes.forEach(m=>mk(m,cls[m],ICONS[m]));
+  const cls={tank:'b1',hide:'b2',which:'b3',bubble:'b4'}; modes.forEach(m=>mk(m,cls[m],ICONS[m]));
   const d=dailyInfo();
   const db=mkBtn(el,'daily',`<div style="width:100%;height:100%;display:flex;justify-content:center;animation:bob 2.6s ease-in-out infinite">${creatureSVG(d.sp)}</div><div class="dots">${[0,1,2].map(i=>`<i class="${S.daily.n>i?'on':''}"></i>`).join('')}</div>${S.daily.done?`<div class="bigstar">${IC.star}</div>`:''}`,'',()=>{ Snd.chime(3); say(nameParts(d.sp.id)); if(S.set.modes.which)setTimeout(()=>go('which',{daily:true}),900); });
   db.style.borderRadius='calc(var(--u)*6)'; 
@@ -1124,6 +1136,34 @@ SCREENS.which=(el,arg)=>{
   return {destroy(){ alive=false; clearT(); },resize(){ if(q&&!q.done){ render(); } else if(q){ cards.className=isLand()?'l':'p'; } }};
 };
 
+
+/* ===== あわあわ(v2):あわをさわると割れて、中の生きものが出てきて名前を言う ===== */
+SCREENS.bubble=(el)=>{
+  el.id='bubscr'; el.innerHTML='<div class="layer" id="bl"></div>'; const bl=$('#bl',el); homeBtn(el);
+  const list=[]; let alive=true, nextT=0, pops=0;
+  const pool=()=>{ const got=SPECIES.filter(s=>S.sp[s.id]&&S.sp[s.id].disc); const no=SPECIES.filter(s=>!(S.sp[s.id]&&S.sp[s.id].disc)); return (no.length&&Math.random()<.2)?no:(got.length?got:SPECIES); };
+  function spawn(){ const u=Math.min(VW,VH); const sz=u*rand(.26,.36); const gold=Math.random()<.08; const sp=pick(pool());
+    const e=document.createElement('div'); e.className='ab'+(gold?' gold':''); e.style.width=e.style.height=sz+'px';
+    e.innerHTML=`<div class="abw">${creatureSVG(sp)}</div>`; bl.appendChild(e);
+    const b={e,sp,sz,gold,x:rand(sz*.1,VW-sz*1.1),y:VH+sz*.2,vy:VH*rand(.07,.11),ph:rand(0,6.28),done:false};
+    e.addEventListener('pointerdown',ev=>{ ev.stopPropagation(); popB(b); }); list.push(b); }
+  function popB(b){ if(b.done)return; b.done=true; Snd.init(); const cx=b.x+b.sz/2, cy=b.y+b.sz/2;
+    Snd.pop(); Snd.bubble(); FX.bubbles(cx,cy,8,b.sz*.4); FX.burst(cx,cy,b.gold?'star':'spark',b.gold?12:7,b.sz*.7); if(b.gold)FX.rain(16);
+    b.e.remove(); const f=document.createElement('div'); f.className='free'; const fs=b.sz*.95; f.style.width=f.style.height=fs+'px';
+    const lr=Math.random()<.5; const flip=faceLeft(b.sp)?(lr?1:-1):1;
+    f.innerHTML=`<div style="width:100%;height:100%;transform:scaleX(${flip})"><div class="an react" style="width:100%;height:100%">${creatureSVG(b.sp)}</div></div>`;
+    f.style.transform=`translate3d(${cx-fs/2}px,${cy-fs/2}px,0)`; bl.appendChild(f);
+    setTimeout(()=>{ f.style.transform=`translate3d(${lr?-fs*1.4:VW+fs*.4}px,${cy-fs/2-VH*.08}px,0)`; f.style.opacity=0; },900); setTimeout(()=>f.remove(),2700);
+    const isNew=discover(b.sp.id,b.gold); if(isNew){ setTimeout(()=>{ Snd.rare(); FX.burst(cx,cy,'spark',12,b.sz); },250); }
+    sayName(b.sp.id,600); pops++; if(pops%10===0)setTimeout(bigBurst,600); }
+  el.addEventListener('pointerdown',e=>{ if(e.target.closest('.rb'))return; tapFx(e); Snd.bubble(); });
+  const tk=(dt,t)=>{ if(!alive)return; if(t>nextT&&list.filter(b=>!b.done).length<4){ nextT=t+rand(900,1600); spawn(); }
+    for(const b of list){ if(b.done)continue; b.y-=b.vy*dt; b.x+=Math.sin(t/700+b.ph)*VW*.03*dt; b.e.style.transform=`translate3d(${b.x.toFixed(1)}px,${b.y.toFixed(1)}px,0)`; if(b.y<-b.sz*1.1){ b.done=true; b.e.remove(); } }
+    for(let i=list.length-1;i>=0;i--)if(list[i].done)list.splice(i,1); };
+  ticks.add(tk);
+  return {destroy(){ alive=false; ticks.delete(tk); }, resize(){} };
+};
+
 /* ===== ずかん ===== */
 SCREENS.dex=(el)=>{
   el.id='dexscr'; el.innerHTML='<div id="pbar"><i></i></div><div id="dgrid"></div>'; homeBtn(el); const g=$('#dgrid',el);
@@ -1196,6 +1236,7 @@ function renderSet(msg){ const st=S.set; const sc=window.scrollY; const prog=`${
   <div class="row"><label><input type="checkbox" data-act="mode" data-m="tank" ${st.modes.tank?'checked':''}> ミニ水槽</label></div>
   <div class="row"><label><input type="checkbox" data-act="mode" data-m="hide" ${st.modes.hide?'checked':''}> かくれんぼ</label></div>
   <div class="row"><label><input type="checkbox" data-act="mode" data-m="which" ${st.modes.which?'checked':''}> どれかな?</label></div>
+  <div class="row"><label><input type="checkbox" data-act="mode" data-m="bubble" ${st.modes.bubble?'checked':''}> あわあわ(あわをわると生きものが出てくる)</label></div>
   <div class="row"><label>起動したときの画面</label><select data-act="start">${fmtOpt('home',st.start,'ホーム')}${fmtOpt('tank',st.start,'ミニ水槽')}${fmtOpt('hide',st.start,'かくれんぼ')}${fmtOpt('which',st.start,'どれかな?')}</select></div>
   <div class="row"><label>「どれかな?」のむずかしさ</label><select data-act="diff">${fmtOpt(0,st.diff,'おまかせ(だんだん難しく)')}${fmtOpt(1,st.diff,'1: 絵2つ')}${fmtOpt(2,st.diff,'2: 絵3つ')}${fmtOpt(3,st.diff,'3: かげ絵2つ')}${fmtOpt(4,st.diff,'4: かげ絵3つ')}</select></div>
   <div class="row"><label>夜モード</label><select data-act="night">${fmtOpt('auto',st.night,'自動(19時〜6時)')}${fmtOpt('day',st.night,'いつも昼')}${fmtOpt('night',st.night,'いつも夜')}</select></div>
