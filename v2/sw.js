@@ -1,7 +1,7 @@
 /* オフライン用 Service Worker: 全ファイルを初回に保存し、以降はキャッシュ優先。
    アプリを更新したら CACHE の番号を上げる。
    v2 は同じサイト内に元の版と同居するので、消すのは v2 自身の古いキャッシュだけ(元の版のキャッシュには触れない)。 */
-const CACHE = 'mini-suisou2-v2.0.0-beta1';
+const CACHE = 'mini-suisou2-v2.1.0-beta1';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k.startsWith('mini-suisou2-')).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
